@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GR Training Log</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#111318">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface-2: #eef0f3;
+    --text: #14161a;
+    --text-dim: #6b7280;
+    --accent: #2563eb;
+    --accent-2: #16a34a;
+    --border: #e2e4e9;
+    --danger: #dc2626;
+    --radius: 14px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e0f13;
+      --surface: #17191f;
+      --surface-2: #1f222a;
+      --text: #edeef0;
+      --text-dim: #9aa0ab;
+      --border: #2a2d35;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: calc(72px + var(--safe-bottom));
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    padding: 18px 16px 10px;
+    position: sticky; top: 0; z-index: 5;
+    background: var(--bg);
+  }
+  header h1 { font-size: 19px; margin: 0 0 2px; }
+  header p { font-size: 13px; color: var(--text-dim); margin: 0; }
+
+  main { padding: 4px 16px 24px; max-width: 640px; margin: 0 auto; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .card h2 { font-size: 15px; margin: 0 0 12px; display:flex; align-items:center; gap:8px;}
+  .card h2 .muted { font-weight: 400; color: var(--text-dim); font-size: 12px; }
+
+  label { display:block; font-size: 12px; color: var(--text-dim); margin: 10px 0 4px; }
+  input, select, textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--accent); color: #fff; width: 100%; margin-top: 14px; }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+  .btn-block { width: 100%; margin-top: 8px; }
+
+  .exercise-block { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--surface-2); }
+  .exercise-block .ex-name { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+  .exercise-block .ex-target { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; }
+  .set-row { display: flex; gap: 6px; margin-bottom: 6px; align-items:center; }
+  .set-row span { font-size: 12px; color: var(--text-dim); width: 20px; }
+  .set-row input { padding: 8px; font-size: 14px; }
+
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 6px 4px calc(6px + var(--safe-bottom));
+    z-index: 10;
+  }
+  .tabbar button {
+    flex: 1;
+    background: none;
+    color: var(--text-dim);
+    font-size: 10.5px;
+    padding: 6px 2px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    border-radius: 10px;
+  }
+  .tabbar button.active { color: var(--accent); background: var(--surface-2); }
+  .tabbar .ic { font-size: 18px; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .history-item {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 13.5px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-item .hi-top { display:flex; justify-content: space-between; font-weight: 600; }
+  .history-item .hi-detail { color: var(--text-dim); font-size: 12.5px; margin-top: 2px; white-space: pre-line; }
+  .history-item .hi-actions { margin-top: 6px; display:flex; gap:6px; }
+  .history-item .hi-actions button { font-size: 11px; padding: 5px 10px; }
+
+  .empty { color: var(--text-dim); font-size: 13px; text-align:center; padding: 20px 0; }
+
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg);
+    padding: 9px 16px; border-radius: 20px; font-size: 13px;
+    opacity: 0; pointer-events:none; transition: opacity .25s;
+    z-index: 20; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+
+  .day-picker { display:flex; gap:6px; margin-bottom: 4px; overflow-x:auto; }
+  .day-picker button {
+    background: var(--surface-2); color: var(--text-dim);
+    white-space: nowrap; font-size: 13px; padding: 8px 14px; border: 1px solid var(--border);
+  }
+  .day-picker button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  #export-output { font-family: ui-monospace, monospace; font-size: 11px; height: 140px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💪 Gonzalo — Training Log</h1>
+  <p id="header-sub">Cargando…</p>
+</header>
+
+<main>
+
+  <!-- ============ VIEW: RUTINA ============ -->
+  <section id="view-rutina" class="view active">
+    <div class="card">
+      <h2>Rutina activa <span class="muted" id="rutina-updated"></span></h2>
+      <div id="rutina-display"></div>
+      <button class="btn-secondary btn-block" onclick="showEditRoutine()">Editar rutina (texto libre)</button>
+      <div id="rutina-edit" style="display:none; margin-top:10px;">
+        <textarea id="rutina-edit-text" style="min-height:220px;"></textarea>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn-secondary" onclick="cancelEditRoutine()">Cancelar</button>
+          <button class="btn-primary" style="margin-top:0;" onclick="saveRoutine()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: REGISTRAR ============ -->
+  <section id="view-registrar" class="view">
+    <div class="card">
+      <h2>Registrar entrenamiento</h2>
+      <label>Fecha</label>
+      <input type="date" id="log-date">
+      <label>Día</label>
+      <div class="day-picker" id="day-picker"></div>
+      <div id="log-exercises"></div>
+      <label>Notas / sensaciones del día</label>
+      <textarea id="log-notes" placeholder="Ej: energía baja, mareo leve, buena sesión..."></textarea>
+      <button class="btn-primary" onclick="saveTrainingLog()">Guardar sesión</button>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: ANTROPOMETRIA ============ -->
+  <section id="view-antro" class="view">
+    <div class="card">
+      <h2>Nueva medición antropométrica</h2>
+      <label>Fecha</label>
+      <input type="date" id="a-fecha">
+      <div class="grid2">
+        <div><label>Peso (kg)</label><input type="number" step="0.1" id="a-peso"></div>
+        <div><label>Cintura (cm)</label><input type="number" step="0.5" id="a-cintura"></div>
+      </div>
+      <h2 style="margin-top:16px;">Pliegues (mm)</h2>
+      <div class="grid3">
+        <div><label>Tríceps</label><input type="number" step="0.1" id="p-triceps"></div>
+        <div><label>Subescap.</label><input type="number" step="0.1" id="p-subesc"></div>
+        <div><label>Supraesp.</label><input type="number" step="0.1" id="p-supra"></div>
+      </div>
+      <div class="grid3">
+        <div><label>Abdominal</label><input type="number" step="0.1" id="p-abdom"></div>
+        <div><label>Muslo</label><input type="number" step="0.1" id="p-muslo"></div>
+        <div><label>Pantorrilla</label><input type="number" step="0.1" id="p-pant"></div>
+      </div>
+      <h2 style="margin-top:16px;">Perímetros (cm)</h2>
+      <div class="grid3">
+        <div><label>Brazo flex.</label><input type="number" step="0.5" id="c-brazo"></div>
+        <div><label>Tórax</label><input type="number" step="0.5" id="c-torax"></div>
+        <div><label>Cadera</label><input type="number" step="0.5" id="c-cadera"></div>
+      </div>
+      <div class="grid2">
+        <div><label>Muslo</label><input type="number" step="0.5" id="c-muslo"></div>
+        <div><label>Pantorrilla</label><input type="number" step="0.5" id="c-pant"></div>
+      </div>
+      <label>Notas</label>
+      <textarea id="a-notas" placeholder="Opcional"></textarea>
+      <button class="btn-primary" onclick="saveAnthro()">Guardar medición</button>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: HISTORIAL ============ -->
+  <section id="view-historial" class="view">
+    <div class="card">
+      <h2>Historial de entrenamientos</h2>
+      <div id="hist-training"><p class="empty">Sin registros todavía</p></div>
+    </div>
+    <div class="card">
+      <h2>Historial antropométrico</h2>
+      <div id="hist-antro"><p class="empty">Sin registros todavía</p></div>
+    </div>
+  </section>
+
+  <!-- ============ VIEW: EXPORTAR ============ -->
+  <section id="view-export" class="view">
+    <div class="card">
+      <h2>Exportar datos</h2>
+      <p style="font-size:13px; color:var(--text-dim); margin-top:0;">
+        Copiá o descargá el JSON y pegalo en el chat de Claude para pedir un informe o una nueva progresión.
+      </p>
+      <button class="btn-secondary btn-block" onclick="buildExport()">Generar export</button>
+      <textarea id="export-output" readonly placeholder="Tocá 'Generar export'..."></textarea>
+      <div class="row" style="margin-top:8px;">
+        <button class="btn-secondary" onclick="copyExport()">Copiar</button>
+        <button class="btn-secondary" onclick="downloadExport()">Descargar .json</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Importar / Restaurar</h2>
+      <p style="font-size:13px; color:var(--text-dim); margin-top:0;">
+        Pegá acá un JSON exportado antes (por ejemplo, para restaurar en otro dispositivo).
+      </p>
+      <textarea id="import-input" placeholder='{"trainingLog": [...], "anthroLog": [...], ...}'></textarea>
+      <button class="btn-secondary btn-block" onclick="importData()">Importar</button>
+    </div>
+    <div class="card">
+      <h2 style="color:var(--danger);">Zona de riesgo</h2>
+      <button class="btn-danger btn-block" onclick="wipeAll()">Borrar todos los datos de este dispositivo</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="tabbar">
+  <button data-view="rutina" class="active" onclick="switchView('rutina')"><span class="ic">📋</span>Rutina</button>
+  <button data-view="registrar" onclick="switchView('registrar')"><span class="ic">✅</span>Registrar</button>
+  <button data-view="antro" onclick="switchView('antro')"><span class="ic">📏</span>Antropo</button>
+  <button data-view="historial" onclick="switchView('historial')"><span class="ic">🕒</span>Historial</button>
+  <button data-view="export" onclick="switchView('export')"><span class="ic">📤</span>Exportar</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================== DATA MODEL ==================== */
+const LS_ROUTINE = 'gr_routine_v1';
+const LS_TRAINING = 'gr_training_log_v1';
+const LS_ANTRO = 'gr_anthro_log_v1';
+
+const DEFAULT_ROUTINE = {
+  updated: '2026-09-29',
+  days: [
+    {
+      id: 'lunes',
+      label: 'Lunes — Fuerza-Potencia Inferior',
+      exercises: [
+        { name: 'Sentadilla', target: '4x3 @ 75%', sets: 4 },
+        { name: '→ Salto vertical / sentadilla salto (contraste)', target: '4x3, peso corporal', sets: 4 },
+        { name: 'Peso muerto rumano (RDL)', target: '3x4 @ 70%', sets: 3 },
+        { name: '→ Salto al cajón / burpee explosivo', target: '3x3, peso corporal', sets: 3 },
+        { name: 'Zancada con salto', target: '3x6 por pierna, sin peso', sets: 3 },
+        { name: 'Giro con balón medicinal', target: '3x8, liviano', sets: 3 }
+      ]
+    },
+    {
+      id: 'miercoles',
+      label: 'Miércoles — Fuerza-Potencia Superior',
+      exercises: [
+        { name: 'Press banca', target: '4x3 @ 75%', sets: 4 },
+        { name: '→ Lanzamiento balón medicinal desde el pecho', target: '4x3, liviano', sets: 4 },
+        { name: 'Remo con barra', target: '4x6', sets: 4 },
+        { name: 'Dominada explosiva (tirón rápido)', target: '3x2-3, peso corporal', sets: 3 },
+        { name: 'Press militar', target: '3x4 @ 70%', sets: 3 },
+        { name: 'Plancha lateral', target: '2x30seg', sets: 2 }
+      ]
+    },
+    {
+      id: 'viernes',
+      label: 'Viernes — Potencia/Velocidad (pre-partido)',
+      exercises: [
+        { name: 'Sentadilla salto / skater jumps', target: '3x5, peso corporal, descanso completo', sets: 3 },
+        { name: 'Sprints cortos / skipping cambios de dirección', target: '4x10-15m', sets: 4 },
+        { name: 'Press banca velocidad', target: '3x3 @ 40-45%, explosivo', sets: 3 },
+        { name: 'Movilidad tobillo/cadera + activación glúteo', target: '2x10, bandas', sets: 2 }
+      ]
+    }
+  ]
+};
+
+// Historial antropométrico previo (evolucion-antropometrica.md), precargado
+const SEED_ANTRO = [
+  {fecha:'2025-01-08', peso:94.4, cintura:104.5, notas:'Carga inicial desde historial del proyecto.'},
+  {fecha:'2025-02-04', peso:92.6, cintura:101.0, notas:''},
+  {fecha:'2025-03-11', peso:94.0, cintura:101.0, notas:''},
+  {fecha:'2025-06-24', peso:96.7, cintura:104.5, notas:''},
+  {fecha:'2025-07-23', peso:98.8, cintura:106.0, notas:''},
+  {fecha:'2025-08-20', peso:100.5, cintura:108.0, notas:'Mejor punto muscular histórico.'},
+  {fecha:'2025-10-22', peso:100.0, cintura:108.0, notas:''},
+  {fecha:'2025-11-19', peso:99.2, cintura:106.5, notas:''},
+  {fecha:'2025-12-16', peso:96.7, cintura:105.0, notas:''},
+  {fecha:'2026-01-20', peso:97.4, cintura:105.0, notas:''},
+  {fecha:'2026-02-25', peso:97.5, cintura:104.0, notas:''},
+  {fecha:'2026-03-26', peso:97.0, cintura:104.0, notas:'Mejor punto de grasa histórico.'},
+  {fecha:'2026-05-27', peso:98.2, cintura:105.0, notas:''},
+  {fecha:'2026-06-30', peso:100.6, cintura:106.0, notas:'Pico reciente de peso.'},
+  {fecha:'2026-08-25', peso:99.4, cintura:108.0, notas:''},
+  {fecha:'2026-09-23', peso:96.9, cintura:104.0, pliegues:{triceps:12.0, subescap:16.5, supraesp:12.5, abdom:16.5, muslo:8.5, pant:8.5}, perimetros:{brazo:37.0, torax:110.0, cadera:113.5, muslo:65.0, pant:42.0}, notas:'Última medición completa con 6 pliegues.'}
+];
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) { return fallback; }
+}
+function saveJSON(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+
+let routine = loadJSON(LS_ROUTINE, DEFAULT_ROUTINE);
+let trainingLog = loadJSON(LS_TRAINING, []);
+let anthroLog = loadJSON(LS_ANTRO, SEED_ANTRO);
+if (!localStorage.getItem(LS_ANTRO)) saveJSON(LS_ANTRO, anthroLog);
+
+let currentDayId = routine.days[0].id;
+
+/* ==================== NAV ==================== */
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  if (name === 'historial') renderHistory();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ==================== RUTINA VIEW ==================== */
+function renderRoutine() {
+  document.getElementById('rutina-updated').textContent = '· actualizado ' + routine.updated;
+  const el = document.getElementById('rutina-display');
+  el.innerHTML = routine.days.map(d => `
+    <div class="exercise-block">
+      <div class="ex-name">${d.label}</div>
+      ${d.exercises.map(e => `<div class="ex-target">• ${e.name} — ${e.target}</div>`).join('')}
+    </div>
+  `).join('');
+}
+
+function showEditRoutine() {
+  document.getElementById('rutina-edit-text').value = JSON.stringify(routine, null, 2);
+  document.getElementById('rutina-edit').style.display = 'block';
+}
+function cancelEditRoutine() {
+  document.getElementById('rutina-edit').style.display = 'none';
+}
+function saveRoutine() {
+  try {
+    const parsed = JSON.parse(document.getElementById('rutina-edit-text').value);
+    routine = parsed;
+    saveJSON(LS_ROUTINE, routine);
+    renderRoutine();
+    buildDayPicker();
+    cancelEditRoutine();
+    toast('Rutina actualizada');
+  } catch(e) {
+    alert('JSON inválido: ' + e.message);
+  }
+}
+
+/* ==================== REGISTRAR VIEW ==================== */
+function buildDayPicker() {
+  const wrap = document.getElementById('day-picker');
+  wrap.innerHTML = routine.days.map(d =>
+    `<button data-day="${d.id}" class="${d.id===currentDayId?'active':''}" onclick="selectDay('${d.id}')">${d.label.split('—')[0].trim()}</button>`
+  ).join('');
+  renderLogExercises();
+}
+function selectDay(id) {
+  currentDayId = id;
+  document.querySelectorAll('#day-picker button').forEach(b => b.classList.toggle('active', b.dataset.day === id));
+  renderLogExercises();
+}
+function renderLogExercises() {
+  const day = routine.days.find(d => d.id === currentDayId);
+  const wrap = document.getElementById('log-exercises');
+  wrap.innerHTML = day.exercises.map((ex, i) => {
+    const nSets = ex.sets || 3;
+    let setsHtml = '';
+    for (let s = 1; s <= nSets; s++) {
+      setsHtml += `
+        <div class="set-row">
+          <span>S${s}</span>
+          <input type="number" step="0.5" placeholder="kg" id="ex${i}-set${s}-kg">
+          <input type="number" placeholder="reps" id="ex${i}-set${s}-reps">
+          <input type="number" placeholder="RPE" id="ex${i}-set${s}-rpe" min="1" max="10">
+        </div>`;
+    }
+    return `
+      <div class="exercise-block">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-target">Objetivo: ${ex.target}</div>
+        ${setsHtml}
+      </div>`;
+  }).join('');
+}
+
+function saveTrainingLog() {
+  const date = document.getElementById('log-date').value;
+  if (!date) { alert('Elegí una fecha'); return; }
+  const day = routine.days.find(d => d.id === currentDayId);
+  const exercises = day.exercises.map((ex, i) => {
+    const sets = [];
+    const nSets = ex.sets || 3;
+    for (let s = 1; s <= nSets; s++) {
+      const kg = document.getElementById(`ex${i}-set${s}-kg`).value;
+      const reps = document.getElementById(`ex${i}-set${s}-reps`).value;
+      const rpe = document.getElementById(`ex${i}-set${s}-rpe`).value;
+      if (kg || reps || rpe) sets.push({ set: s, kg: kg ? Number(kg) : null, reps: reps ? Number(reps) : null, rpe: rpe ? Number(rpe) : null });
+    }
+    return { name: ex.name, target: ex.target, sets };
+  }).filter(e => e.sets.length > 0);
+
+  if (exercises.length === 0) { alert('Cargá al menos una serie'); return; }
+
+  trainingLog.push({
+    fecha: date,
+    dayId: currentDayId,
+    dayLabel: day.label,
+    notas: document.getElementById('log-notes').value,
+    exercises
+  });
+  trainingLog.sort((a,b) => a.fecha.localeCompare(b.fecha));
+  saveJSON(LS_TRAINING, trainingLog);
+  document.getElementById('log-notes').value = '';
+  renderLogExercises();
+  toast('Sesión guardada ✔');
+}
+
+/* ==================== ANTROPOMETRIA VIEW ==================== */
+function saveAnthro() {
+  const fecha = document.getElementById('a-fecha').value;
+  if (!fecha) { alert('Elegí una fecha'); return; }
+  const num = id => { const v = document.getElementById(id).value; return v === '' ? null : Number(v); };
+  const entry = {
+    fecha,
+    peso: num('a-peso'),
+    cintura: num('a-cintura'),
+    pliegues: {
+      triceps: num('p-triceps'), subescap: num('p-subesc'), supraesp: num('p-supra'),
+      abdom: num('p-abdom'), muslo: num('p-muslo'), pant: num('p-pant')
+    },
+    perimetros: {
+      brazo: num('c-brazo'), torax: num('c-torax'), cadera: num('c-cadera'),
+      muslo: num('c-muslo'), pant: num('c-pant')
+    },
+    notas: document.getElementById('a-notas').value
+  };
+  anthroLog.push(entry);
+  anthroLog.sort((a,b) => a.fecha.localeCompare(b.fecha));
+  saveJSON(LS_ANTRO, anthroLog);
+  ['a-peso','a-cintura','p-triceps','p-subesc','p-supra','p-abdom','p-muslo','p-pant','c-brazo','c-torax','c-cadera','c-muslo','c-pant','a-notas'].forEach(id => document.getElementById(id).value = '');
+  toast('Medición guardada ✔');
+}
+
+/* ==================== HISTORIAL VIEW ==================== */
+function renderHistory() {
+  const trWrap = document.getElementById('hist-training');
+  if (trainingLog.length === 0) {
+    trWrap.innerHTML = '<p class="empty">Sin registros todavía</p>';
+  } else {
+    trWrap.innerHTML = [...trainingLog].reverse().map((t, idxRev) => {
+      const idx = trainingLog.length - 1 - idxRev;
+      const detail = t.exercises.map(e =>
+        e.name + ': ' + e.sets.map(s => `${s.kg ?? '-'}kg x${s.reps ?? '-'}${s.rpe ? ' @RPE'+s.rpe : ''}`).join(', ')
+      ).join('\n');
+      return `<div class="history-item">
+        <div class="hi-top"><span>${fmtDate(t.fecha)} — ${t.dayLabel}</span></div>
+        <div class="hi-detail">${detail}${t.notas ? '\nNotas: ' + t.notas : ''}</div>
+        <div class="hi-actions"><button class="btn-danger" onclick="deleteTraining(${idx})">Eliminar</button></div>
+      </div>`;
+    }).join('');
+  }
+
+  const anWrap = document.getElementById('hist-antro');
+  if (anthroLog.length === 0) {
+    anWrap.innerHTML = '<p class="empty">Sin registros todavía</p>';
+  } else {
+    anWrap.innerHTML = [...anthroLog].reverse().map((a, idxRev) => {
+      const idx = anthroLog.length - 1 - idxRev;
+      let detail = `Peso: ${a.peso ?? '-'}kg · Cintura: ${a.cintura ?? '-'}cm`;
+      if (a.pliegues && Object.values(a.pliegues).some(v => v != null)) {
+        detail += '\nPliegues: ' + Object.entries(a.pliegues).map(([k,v]) => v!=null ? `${k} ${v}` : null).filter(Boolean).join(', ');
+      }
+      if (a.perimetros && Object.values(a.perimetros).some(v => v != null)) {
+        detail += '\nPerímetros: ' + Object.entries(a.perimetros).map(([k,v]) => v!=null ? `${k} ${v}` : null).filter(Boolean).join(', ');
+      }
+      if (a.notas) detail += '\n' + a.notas;
+      return `<div class="history-item">
+        <div class="hi-top"><span>${fmtDate(a.fecha)}</span></div>
+        <div class="hi-detail">${detail}</div>
+        <div class="hi-actions"><button class="btn-danger" onclick="deleteAnthro(${idx})">Eliminar</button></div>
+      </div>`;
+    }).join('');
+  }
+}
+function fmtDate(iso) {
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function deleteTraining(idx) {
+  if (!confirm('¿Eliminar este registro de entrenamiento?')) return;
+  trainingLog.splice(idx, 1);
+  saveJSON(LS_TRAINING, trainingLog);
+  renderHistory();
+}
+function deleteAnthro(idx) {
+  if (!confirm('¿Eliminar esta medición?')) return;
+  anthroLog.splice(idx, 1);
+  saveJSON(LS_ANTRO, anthroLog);
+  renderHistory();
+}
+
+/* ==================== EXPORT / IMPORT ==================== */
+function buildExport() {
+  const data = {
+    exportedAt: new Date().toISOString(),
+    routine, trainingLog, anthroLog
+  };
+  document.getElementById('export-output').value = JSON.stringify(data, null, 2);
+}
+function copyExport() {
+  const ta = document.getElementById('export-output');
+  if (!ta.value) buildExport();
+  ta.select();
+  document.execCommand('copy');
+  toast('Copiado al portapapeles');
+}
+function downloadExport() {
+  const ta = document.getElementById('export-output');
+  if (!ta.value) buildExport();
+  const blob = new Blob([ta.value], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `gr-training-export-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData() {
+  const raw = document.getElementById('import-input').value;
+  if (!raw.trim()) { alert('Pegá un JSON primero'); return; }
+  try {
+    const data = JSON.parse(raw);
+    if (data.routine) { routine = data.routine; saveJSON(LS_ROUTINE, routine); }
+    if (data.trainingLog) { trainingLog = data.trainingLog; saveJSON(LS_TRAINING, trainingLog); }
+    if (data.anthroLog) { anthroLog = data.anthroLog; saveJSON(LS_ANTRO, anthroLog); }
+    renderRoutine(); buildDayPicker(); renderHistory();
+    document.getElementById('import-input').value = '';
+    toast('Datos importados ✔');
+  } catch(e) {
+    alert('JSON inválido: ' + e.message);
+  }
+}
+function wipeAll() {
+  if (!confirm('Esto borra TODOS los datos guardados en este dispositivo. ¿Continuar?')) return;
+  localStorage.removeItem(LS_ROUTINE);
+  localStorage.removeItem(LS_TRAINING);
+  localStorage.removeItem(LS_ANTRO);
+  location.reload();
+}
+
+/* ==================== INIT ==================== */
+function todayISO() { return new Date().toISOString().slice(0,10); }
+document.getElementById('log-date').value = todayISO();
+document.getElementById('a-fecha').value = todayISO();
+document.getElementById('header-sub').textContent = 'Rutina fuerza-potencia · Lun/Mié/Vie';
+renderRoutine();
+buildDayPicker();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
