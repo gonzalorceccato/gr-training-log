@@ -286,7 +286,7 @@
 
 <script>
 /* ==================== DATA MODEL ==================== */
-const LS_ROUTINE = 'gr_routine_v1';
+const LS_ROUTINE = 'gr_routine_v2';
 const LS_TRAINING = 'gr_training_log_v1';
 const LS_ANTRO = 'gr_anthro_log_v1';
 
@@ -297,34 +297,50 @@ const DEFAULT_ROUTINE = {
       id: 'lunes',
       label: 'Lunes — Fuerza-Potencia Inferior',
       exercises: [
-        { name: 'Sentadilla', target: '4x3 @ 75%', sets: 4 },
-        { name: '→ Salto vertical / sentadilla salto (contraste)', target: '4x3, peso corporal', sets: 4 },
-        { name: 'Peso muerto rumano (RDL)', target: '3x4 @ 70%', sets: 3 },
-        { name: '→ Salto al cajón / burpee explosivo', target: '3x3, peso corporal', sets: 3 },
-        { name: 'Zancada con salto', target: '3x6 por pierna, sin peso', sets: 3 },
-        { name: 'Giro con balón medicinal', target: '3x8, liviano', sets: 3 }
+        { name: 'Sentadilla', target: '4x3 @ 80%', sets: 4 },
+        { name: '→ Salto vertical con contramovimiento (contraste)', target: '4x3, peso corporal (subir altura si usás cajón)', sets: 4 },
+        { name: 'Peso muerto rumano (RDL)', target: '4x4 @ 72%', sets: 4 },
+        { name: '→ Salto al cajón', target: '3x4, peso corporal', sets: 3 },
+        { name: 'Zancada con salto', target: '3x6 por pierna, con mancuernas livianas', sets: 3 },
+        { name: 'Salto lateral unilateral (skater jump a upa, aterrizaje controlado)', target: '3x5 por lado', sets: 3 },
+        { name: 'Giro con balón medicinal', target: '3x10, un poco más de peso', sets: 3 }
       ]
     },
     {
       id: 'miercoles',
       label: 'Miércoles — Fuerza-Potencia Superior',
       exercises: [
-        { name: 'Press banca', target: '4x3 @ 75%', sets: 4 },
-        { name: '→ Lanzamiento balón medicinal desde el pecho', target: '4x3, liviano', sets: 4 },
-        { name: 'Remo con barra', target: '4x6', sets: 4 },
-        { name: 'Dominada explosiva (tirón rápido)', target: '3x2-3, peso corporal', sets: 3 },
-        { name: 'Press militar', target: '3x4 @ 70%', sets: 3 },
-        { name: 'Plancha lateral', target: '2x30seg', sets: 2 }
+        { name: 'Press banca', target: '4x4 @ 78%', sets: 4 },
+        { name: '→ Lanzamiento balón medicinal desde el pecho (más pesado)', target: '4x3', sets: 4 },
+        { name: 'Remo con barra', target: '4x8', sets: 4 },
+        { name: 'Dominada explosiva (tirón rápido)', target: '4x3, peso corporal', sets: 4 },
+        { name: 'Press militar', target: '4x5 @ 72%', sets: 4 },
+        { name: 'Plancha lateral con toque de hombro (dinámica)', target: '3x30seg por lado', sets: 3 }
       ]
     },
     {
       id: 'viernes',
       label: 'Viernes — Potencia/Velocidad (pre-partido)',
       exercises: [
-        { name: 'Sentadilla salto / skater jumps', target: '3x5, peso corporal, descanso completo', sets: 3 },
-        { name: 'Sprints cortos / skipping cambios de dirección', target: '4x10-15m', sets: 4 },
-        { name: 'Press banca velocidad', target: '3x3 @ 40-45%, explosivo', sets: 3 },
-        { name: 'Movilidad tobillo/cadera + activación glúteo', target: '2x10, bandas', sets: 2 }
+        { name: 'Sentadilla salto o skater jumps', target: '4x5, peso corporal, descanso completo entre series', sets: 4 },
+        { name: 'Salto al cajón con salida rápida (reactivo, altura baja-media)', target: '3x4', sets: 3 },
+        { name: 'Sprints cortos / skipping con cambios de dirección', target: '5x10-15m', sets: 5 },
+        { name: 'Press banca velocidad', target: '3x3 @ 45-50%, explosivo', sets: 3 },
+        { name: 'Movilidad tobillo/cadera + activación de glúteo', target: '2x12, bandas', sets: 2 }
+      ]
+    },
+    {
+      id: 'dia_a',
+      label: 'Día A — Velocidad pura (aceleración)',
+      exercises: [
+        { name: 'Sprints 20-30m', target: '6-8 series, descanso completo 2-3min, foco en arranque y primeros pasos', sets: 7 }
+      ]
+    },
+    {
+      id: 'dia_d',
+      label: 'Día D — Cambios de dirección / agilidad',
+      exercises: [
+        { name: 'Recorrido en T o zigzag con conos', target: '6-8 repeticiones, descanso completo, foco en frenado y re-aceleración', sets: 7 }
       ]
     }
   ]
